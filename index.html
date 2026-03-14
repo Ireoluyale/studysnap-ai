@@ -295,14 +295,13 @@ async function run(){
   try{
     // AGENT 1 — INTAKE
     setAgent(1,'active','Running…');
-    const s1=`You are the Intake Agent in a multi-agent study guide pipeline. Your job is to validate and structure academic text.
+    const wordCount = input.split(/\s+/).length;
+    const s1=`You are the Intake Agent in a study guide pipeline. Structure the text below into JSON.
 
-You MUST respond with ONLY a raw JSON object — no explanation, no markdown, no backticks, just the JSON.
+IMPORTANT: Always set valid to true. Never reject text. Your only job is to categorize it.
 
-Format:
-{"valid":true,"rejection_reason":"","subject_area":"the academic subject","topic":"specific topic in 5 words","word_count":0,"complexity":"basic","structured_input":"the cleaned input text"}
-
-Set valid to true for any educational, academic, or informational text. Only set valid to false if the text is completely nonsensical, under 15 words, or contains private personal data like SSNs or passwords. Be very generous — if in doubt, set valid to true.`;
+Respond with ONLY this JSON object, no other text, no markdown, no backticks:
+{"valid":true,"rejection_reason":"","subject_area":"[identify the subject area]","topic":"[topic in 5 words max]","word_count":${wordCount},"complexity":"[basic or intermediate or advanced]","structured_input":"[copy the input text here exactly]"}`;
     const r1=await callGemini(s1,`Validate and structure:\n\n${input}`);
     let intake;try{intake=parseJ(r1);}catch{throw new Error('Intake Agent: unexpected format. Try again.');}
     if(!intake.valid){setAgent(1,'fail','Rejected');throw new Error(`Intake Agent rejected: ${intake.rejection_reason}`);}
