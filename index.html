@@ -262,7 +262,7 @@ async function callGemini(sys,msg){
   if(!r.ok){
     const m=d.error?.message||'API error';
     if(m.includes('API_KEY')||m.includes('400'))throw new Error('Invalid API key. Double-check at aistudio.google.com.');
-    if(m.includes('quota')||r.status===429)throw new Error('Free tier rate limit hit. Wait 60 seconds and try again.');
+    if(m.includes('quota')||r.status===429)throw new Error('Gemini rate limit reached — please wait 30 seconds and click Generate again.');
     throw new Error(m);
   }
   return d.candidates?.[0]?.content?.parts?.[0]?.text||'';
@@ -275,6 +275,7 @@ function parseJ(raw){
   throw new Error('Could not parse agent response. Try again.');
 }
 
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
 async function run(){
   const input=txtEl.value.trim();
   if(!input)return showErr('Please paste some text first.');
@@ -310,6 +311,7 @@ Set valid to true for any educational, academic, or informational text. Only set
     hf.textContent=`Intake → Agent 2 handoff: subject="${intake.subject_area}" · topic="${intake.topic}" · complexity="${intake.complexity}" · words=${intake.word_count}`;
 
     // AGENT 2 — ANALYSIS
+    await sleep(3000);
     setAgent(2,'active','Running…');
     const s2=`You are the Analysis Agent. Receive structured output from the Intake Agent and extract exactly 5 key concepts.
 Respond ONLY with valid JSON, no markdown:
@@ -321,6 +323,7 @@ Extract ONLY from the provided text. Rank by importance.`;
     hf.textContent=`Analysis → Agent 3 handoff: ${analysis.concepts?.length||5} concepts extracted · core argument identified · passing to Study Guide Agent`;
 
     // AGENT 3 — STUDY GUIDE
+    await sleep(3000);
     setAgent(3,'active','Running…');
     const s3=`You are the Study Guide Agent — final agent in the pipeline. Receive analysis and produce the student study guide.
 Respond ONLY with valid JSON, no markdown:
