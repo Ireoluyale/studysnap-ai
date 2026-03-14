@@ -267,7 +267,13 @@ async function callGemini(sys,msg){
   }
   return d.candidates?.[0]?.content?.parts?.[0]?.text||'';
 }
-function parseJ(raw){return JSON.parse(raw.replace(/```json|```/g,'').trim());}
+function parseJ(raw){
+  let c=raw.replace(/```json|```/g,'').trim();
+  try{return JSON.parse(c);}catch(e){}
+  const m=c.match(/\{[\s\S]*\}/);
+  if(m){try{return JSON.parse(m[0]);}catch(e){}}
+  throw new Error('Could not parse agent response. Try again.');
+}
 
 async function run(){
   const input=txtEl.value.trim();
@@ -288,10 +294,14 @@ async function run(){
   try{
     // AGENT 1 — INTAKE
     setAgent(1,'active','Running…');
-    const s1=`You are the Intake Agent in a multi-agent study guide pipeline. Validate and structure the incoming academic text.
-Respond ONLY with valid JSON, no markdown:
-{"valid":true,"rejection_reason":"only if false","subject_area":"subject","topic":"topic max 5 words","word_count":0,"complexity":"basic|intermediate|advanced","structured_input":"cleaned text"}
-Reject if: under 20 words, not academic, contains PII or live exam questions.`;
+    const s1=`You are the Intake Agent in a multi-agent study guide pipeline. Your job is to validate and structure academic text.
+
+You MUST respond with ONLY a raw JSON object — no explanation, no markdown, no backticks, just the JSON.
+
+Format:
+{"valid":true,"rejection_reason":"","subject_area":"the academic subject","topic":"specific topic in 5 words","word_count":0,"complexity":"basic","structured_input":"the cleaned input text"}
+
+Set valid to true for any educational, academic, or informational text. Only set valid to false if the text is completely nonsensical, under 15 words, or contains private personal data like SSNs or passwords. Be very generous — if in doubt, set valid to true.`;
     const r1=await callGemini(s1,`Validate and structure:\n\n${input}`);
     let intake;try{intake=parseJ(r1);}catch{throw new Error('Intake Agent: unexpected format. Try again.');}
     if(!intake.valid){setAgent(1,'fail','Rejected');throw new Error(`Intake Agent rejected: ${intake.rejection_reason}`);}
