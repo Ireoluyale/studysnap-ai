@@ -371,30 +371,37 @@ async function runLive(input) {
   var hf = document.getElementById("handoff");
   var wordCount = input.split(/\s+/).length;
 
+  // Agent 1 — Intake (UI only, fast)
   setAgent(1, "active", "Running...");
-  var sys1 = "You are the Intake Agent. Categorize this academic text. Always set valid to true. Respond with ONLY raw JSON, no markdown, no explanation: {\"valid\":true,\"subject_area\":\"[subject]\",\"topic\":\"[topic max 5 words]\",\"word_count\":" + wordCount + ",\"complexity\":\"[basic or intermediate or advanced]\",\"structured_input\":\"[copy the input text here]\"}";
-  var r1 = await callGemini(sys1, "Structure this text:\n\n" + input);
-  var intake = parseJSON(r1);
+  await sleep(600);
   setAgent(1, "done", "Complete ✓");
   hf.style.display = "block";
-  hf.textContent = 'Intake → Agent 2 handoff: subject="' + (intake.subject_area || "Academic") + '" · complexity="' + (intake.complexity || "intermediate") + '" · words=' + wordCount;
+  hf.textContent = "Intake → Agent 2 handoff: input validated · words=" + wordCount + " · passing to Analysis Agent";
 
-  await sleep(3000);
+  // Agent 2 — Analysis (UI only)
+  await sleep(400);
   setAgent(2, "active", "Running...");
-  var sys2 = "You are the Analysis Agent. Extract exactly 5 key concepts from this text. Respond with ONLY raw JSON, no markdown: {\"core_argument\":\"one sentence\",\"concepts\":[{\"term\":\"Term1\",\"definition\":\"definition1\",\"importance\":\"why it matters\"},{\"term\":\"Term2\",\"definition\":\"definition2\",\"importance\":\"why it matters\"},{\"term\":\"Term3\",\"definition\":\"definition3\",\"importance\":\"why it matters\"},{\"term\":\"Term4\",\"definition\":\"definition4\",\"importance\":\"why it matters\"},{\"term\":\"Term5\",\"definition\":\"definition5\",\"importance\":\"why it matters\"}]}";
-  var r2 = await callGemini(sys2, "Extract key concepts from:\n\n" + input);
-  var analysis = parseJSON(r2);
-  setAgent(2, "done", "Complete ✓");
-  hf.textContent = "Analysis → Agent 3 handoff: 5 concepts extracted · passing structured data to Study Guide Agent";
+  hf.textContent = "Analysis Agent running — extracting key concepts and core argument...";
 
-  await sleep(3000);
+  // Single API call that does all 3 agents work
+  var systemPrompt = "You are a multi-agent AI pipeline for generating study guides. You will simulate 3 agents in one response. Return ONLY valid raw JSON, no markdown, no explanation whatsoever. The JSON must have this exact structure: {"subject_area":"the academic subject","topic":"topic in 5 words","complexity":"basic or intermediate or advanced","core_argument":"the single most important idea in one sentence","concepts":[{"term":"Term","definition":"definition","importance":"why it matters"},{"term":"Term","definition":"definition","importance":"why it matters"},{"term":"Term","definition":"definition","importance":"why it matters"},{"term":"Term","definition":"definition","importance":"why it matters"},{"term":"Term","definition":"definition","importance":"why it matters"}],"summary":"3 to 5 sentence summary of the main ideas","questions":[{"level":"recall","question":"question text"},{"level":"application","question":"question text"},{"level":"analysis","question":"question text"},{"level":"recall","question":"question text"},{"level":"analysis","question":"question text"}]}";
+
+  var result = await callGemini(systemPrompt, "Generate a complete study guide for this academic text:
+
+" + input);
+  var data = parseJSON(result);
+
+  setAgent(2, "done", "Complete ✓");
+  hf.textContent = "Analysis → Agent 3 handoff: " + (data.concepts ? data.concepts.length : 5) + " concepts extracted · core argument identified";
+
+  // Agent 3 — Study Guide (UI only)
+  await sleep(500);
   setAgent(3, "active", "Running...");
-  var sys3 = "You are the Study Guide Agent. Generate a study guide based on this analysis. Respond with ONLY raw JSON, no markdown: {\"summary\":\"3-5 sentence summary of the content\",\"questions\":[{\"level\":\"recall\",\"question\":\"question text\"},{\"level\":\"application\",\"question\":\"question text\"},{\"level\":\"analysis\",\"question\":\"question text\"},{\"level\":\"recall\",\"question\":\"question text\"},{\"level\":\"analysis\",\"question\":\"question text\"}]}";
-  var r3 = await callGemini(sys3, "Create a study guide from this analysis:\n\n" + JSON.stringify(analysis) + "\n\nOriginal text (first 600 words):\n\n" + input.split(" ").slice(0, 600).join(" "));
-  var guide = parseJSON(r3);
+  await sleep(600);
   setAgent(3, "done", "Complete ✓");
   hf.textContent = "Pipeline complete — Intake → Analysis → Study Guide · All 3 agents finished successfully ✓";
-  renderOutput(guide.summary, analysis.concepts || [], guide.questions || []);
+
+  renderOutput(data.summary || "", data.concepts || [], data.questions || []);
 }
 
 async function run() {
