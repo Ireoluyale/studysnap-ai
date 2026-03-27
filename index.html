@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StudySnap AI</title>
+<title>StudySnap AI — Multi-Agent Study Guide Generator</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh}
@@ -87,7 +87,7 @@ textarea::placeholder{color:#cbd5e1;font-style:italic}
 .pc .abadge{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0}
 .pq .abadge{background:#fef9c3;color:#854d0e;border:1px solid #fef08a}
 .pb{padding:16px}
-.pb>p{font-size:14px;line-height:1.75;color:#334155}
+.pb p{font-size:14px;line-height:1.75;color:#334155}
 .concept{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f8fafc}
 .concept:last-child{border-bottom:none}
 .cn{width:22px;height:22px;border-radius:50%;background:#0d9488;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
@@ -102,232 +102,365 @@ textarea::placeholder{color:#cbd5e1;font-style:italic}
 @keyframes shim{0%,100%{opacity:.5}50%{opacity:1}}
 .disc{margin-top:16px;padding:12px 16px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;font-size:12px;color:#92400e;line-height:1.55}
 footer{text-align:center;padding:20px;font-size:11px;color:#94a3b8;border-top:1px solid #f1f5f9;margin-top:20px}
-@media(max-width:600px){header{padding:14px 16px}.hero{padding:36px 16px 52px}main{padding:28px 14px 60px}.agents{flex-direction:column;gap:8px}.arr{transform:rotate(90deg);height:20px;width:100%}}
+@media(max-width:600px){
+  header{padding:14px 16px}
+  .hero{padding:36px 16px 52px}
+  main{padding:28px 14px 60px}
+  .agents{flex-direction:column;gap:8px}
+  .arr{transform:rotate(90deg);height:20px;width:100%}
+}
 </style>
 </head>
 <body>
+
 <header>
-  <div class="logo"><div class="logo-icon">📚</div><div class="logo-text">Study<span>Snap</span> AI</div></div>
+  <div class="logo">
+    <div class="logo-icon">📚</div>
+    <div class="logo-text">Study<span>Snap</span> AI</div>
+  </div>
   <div class="hbadge">3-AGENT PIPELINE · MVP</div>
 </header>
+
 <div class="hero">
   <div class="eyebrow">Week 7 Capstone · Data TechCon</div>
   <h1>Paste text.<br><em>Get your study guide.</em></h1>
   <p>A multi-agent AI pipeline — Intake Agent validates, Analysis Agent extracts concepts, Study Guide Agent generates your output.</p>
 </div>
+
 <main>
+
   <div class="modebar">
-    <div><div class="modelabel">Select mode</div><div class="modesub">Use Demo Mode for presentations — no API key needed</div></div>
+    <div>
+      <div class="modelabel">Select mode</div>
+      <div class="modesub">Use Demo Mode for presentations — no API key needed</div>
+    </div>
     <div class="togglerow">
       <button class="tbtn on" id="bdemo" onclick="setMode('demo')">Demo Mode</button>
       <button class="tbtn" id="blive" onclick="setMode('live')">Live AI Mode</button>
     </div>
   </div>
+
   <div class="setupcard" id="setupcard">
     <div class="stitle">🔑 Connect your free Gemini API key</div>
-    <div class="ssub">Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a> → Create API key. No credit card needed.</div>
-    <div class="krow"><input type="password" id="kinput" placeholder="AIzaSy..."/><button class="ksave" onclick="saveKey()">Save key</button></div>
+    <div class="ssub">Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a> — click Create API key. No credit card needed.</div>
+    <div class="krow">
+      <input type="password" id="kinput" placeholder="AIzaSy..." />
+      <button class="ksave" onclick="saveKey()">Save key</button>
+    </div>
     <div class="ksaved" id="ksaved">✓ API key saved — ready to generate!</div>
   </div>
-  <div class="demonote" id="demonote"><strong>Demo Mode is active.</strong> The pipeline runs with realistic pre-built responses — perfect for demos with no API key needed. Switch to Live AI Mode for real-time AI output on any text.</div>
+
+  <div class="demonote" id="demonote">
+    <strong>Demo Mode is active.</strong> The pipeline runs with realistic pre-built responses — perfect for demos with no API key needed. Switch to Live AI Mode for real-time AI output on any text.
+  </div>
+
   <div class="err" id="err"></div>
+
   <div class="icard">
-    <div class="ctop"><span class="clabel">Your academic text</span><span class="wc" id="wc">0 / 2,500 words</span></div>
-    <textarea id="txt" placeholder="Paste your lecture notes, textbook passage, or article excerpt here…&#10;&#10;In Demo Mode, any text works. Tip: Ctrl+Enter to generate."></textarea>
+    <div class="ctop">
+      <span class="clabel">Your academic text</span>
+      <span class="wc" id="wc">0 / 2,500 words</span>
+    </div>
+    <textarea id="txt" placeholder="Paste your lecture notes, textbook passage, or article excerpt here…
+
+In Demo Mode, any text works. Ctrl+Enter to generate."></textarea>
     <div class="cfoot">
       <span class="notice">No data stored · Session only · Do not paste PII or live exam content</span>
-      <button class="bgen" id="btn" onclick="run()"><span class="btxt">✦ Generate study guide</span><div class="spin"></div></button>
+      <button class="bgen" id="btn" onclick="run()">
+        <span class="btxt">✦ Generate study guide</span>
+        <div class="spin"></div>
+      </button>
     </div>
   </div>
+
   <div class="pipeline" id="pipeline">
     <div class="plabel">Agent pipeline status</div>
     <div class="agents">
-      <div class="agent" id="a1"><div class="anum">Agent 1</div><div class="aname">Intake Agent</div><div class="arole">Validates &amp; structures input</div><div class="ast" id="s1">Waiting</div></div>
+      <div class="agent" id="a1">
+        <div class="anum">Agent 1</div>
+        <div class="aname">Intake Agent</div>
+        <div class="arole">Validates &amp; structures input</div>
+        <div class="ast" id="s1">Waiting</div>
+      </div>
       <div class="arr">→</div>
-      <div class="agent" id="a2"><div class="anum">Agent 2</div><div class="aname">Analysis Agent</div><div class="arole">Extracts concepts &amp; topics</div><div class="ast" id="s2">Waiting</div></div>
+      <div class="agent" id="a2">
+        <div class="anum">Agent 2</div>
+        <div class="aname">Analysis Agent</div>
+        <div class="arole">Extracts concepts &amp; topics</div>
+        <div class="ast" id="s2">Waiting</div>
+      </div>
       <div class="arr">→</div>
-      <div class="agent" id="a3"><div class="anum">Agent 3</div><div class="aname">Study Guide Agent</div><div class="arole">Generates summary &amp; questions</div><div class="ast" id="s3">Waiting</div></div>
+      <div class="agent" id="a3">
+        <div class="anum">Agent 3</div>
+        <div class="aname">Study Guide Agent</div>
+        <div class="arole">Generates summary &amp; questions</div>
+        <div class="ast" id="s3">Waiting</div>
+      </div>
     </div>
     <div class="handoff" id="handoff"></div>
   </div>
+
   <div class="output" id="output">
-    <div class="oh"><div class="otitle">Your study guide</div><button class="bcopy" onclick="copyAll()">Copy all</button></div>
-    <div class="panel ps"><div class="ph"><div class="pico">📝</div><span class="ptag">Summary</span><span class="abadge">Study Guide Agent</span></div><div class="pb" id="pbs"></div></div>
-    <div class="panel pc"><div class="ph"><div class="pico">🔑</div><span class="ptag">Key concepts</span><span class="abadge">Analysis Agent</span></div><div class="pb" id="pbc"></div></div>
-    <div class="panel pq"><div class="ph"><div class="pico">❓</div><span class="ptag">Practice questions</span><span class="abadge">Study Guide Agent</span></div><div class="pb" id="pbq"></div></div>
+    <div class="oh">
+      <div class="otitle">Your study guide</div>
+      <button class="bcopy" onclick="copyAll()">Copy all</button>
+    </div>
+    <div class="panel ps">
+      <div class="ph"><div class="pico">📝</div><span class="ptag">Summary</span><span class="abadge">Study Guide Agent</span></div>
+      <div class="pb" id="pbs"></div>
+    </div>
+    <div class="panel pc">
+      <div class="ph"><div class="pico">🔑</div><span class="ptag">Key concepts</span><span class="abadge">Analysis Agent</span></div>
+      <div class="pb" id="pbc"></div>
+    </div>
+    <div class="panel pq">
+      <div class="ph"><div class="pico">❓</div><span class="ptag">Practice questions</span><span class="abadge">Study Guide Agent</span></div>
+      <div class="pb" id="pbq"></div>
+    </div>
     <div class="disc"><strong>AI-generated content.</strong> This study guide was created by a 3-agent AI pipeline. Review it critically before using it to study.</div>
   </div>
+
 </main>
 <footer>StudySnap AI · Week 7 Final Capstone · Data TechCon · Powered by Google Gemini</footer>
+
 <script>
-const DEMO={
-  intake:{subject_area:"History / Civil Rights",topic:"Nation of Islam 1959 rally",complexity:"intermediate"},
-  concepts:[
-    {term:"Nation of Islam",definition:"An African American political and religious organization founded in 1930, advocating for Black self-determination and separation from white-dominated society."},
-    {term:"Black Muslim Movement",definition:"A broad term for African American Muslim organizations in the mid-20th century that combined Islamic faith with Black nationalist ideology."},
-    {term:"Lou Lomax",definition:"An African American journalist assigned to film the Nation of Islam rally in Washington D.C., bringing national media attention to the organization."},
-    {term:"Racial Separatism",definition:"The political ideology advocating social and political separation of racial groups, reflected in the rhetoric of charges leveled at white society during the rally."},
-    {term:"Mass Mobilization",definition:"The process of organizing large numbers of people around a political or social cause, evidenced by the overflowing auditorium at the rally."}
-  ],
-  questions:[
-    {level:"recall",question:"Who was assigned to film the Nation of Islam rally in Washington D.C.?"},
-    {level:"recall",question:"What was the name of the play performed at the rally, and who wrote it?"},
-    {level:"application",question:"How did the rhetoric used at the rally reflect the broader goals of the Black nationalist movement in the late 1950s?"},
-    {level:"analysis",question:"What does the narrator's reaction to the film footage — described as being 'simply stunned' — reveal about mainstream American awareness of the Nation of Islam?"},
-    {level:"analysis",question:"How does using a legal trial format serve as a rhetorical strategy for addressing racial injustice in the play?"}
-  ],
-  summary:"The passage describes a 1959 Nation of Islam rally in Washington D.C. that was filmed by journalist Lou Lomax. The event featured a performance of a play by Louis X called 'The Trial,' in which white people were symbolically charged with crimes against Black people including murder, lying, and troublemaking. The narrator recounts being stunned by the footage, revealing a significant gap between mainstream awareness and the actual scale of the Black Muslim movement. The overflowing auditorium demonstrated powerful mass mobilization around Black nationalist ideology at a critical moment in the American civil rights era."
-};
 
-let mode="demo";
-function setMode(m){
-  mode=m;
-  document.getElementById("bdemo").classList.toggle("on",m==="demo");
-  document.getElementById("blive").classList.toggle("on",m==="live");
-  document.getElementById("setupcard").style.display=m==="live"?"block":"none";
-  document.getElementById("demonote").style.display=m==="demo"?"block":"none";
-  document.getElementById("pipeline").style.display="none";
-  document.getElementById("output").style.display="none";
+var DEMO_SUMMARY = "The passage describes a 1959 Nation of Islam rally in Washington D.C. that was filmed by journalist Lou Lomax. The event featured a performance of a play by Louis X called The Trial, in which white people were symbolically charged with crimes against Black people. The narrator recounts being stunned by the footage, revealing a significant gap between mainstream awareness and the actual scale of the movement. The overflowing auditorium demonstrated powerful mass mobilization around Black nationalist ideology at a critical moment in American history.";
+
+var DEMO_CONCEPTS = [
+  {term:"Nation of Islam", definition:"An African American political and religious organization founded in 1930, advocating for Black self-determination and separation from white-dominated society."},
+  {term:"Black Muslim Movement", definition:"A broad term for African American Muslim organizations that combined Islamic faith with Black nationalist ideology in the mid-20th century."},
+  {term:"Lou Lomax", definition:"An African American journalist assigned to film the Nation of Islam rally in Washington D.C., bringing national media attention to the movement."},
+  {term:"Racial Separatism", definition:"The political ideology advocating social and political separation of racial groups, reflected in the rhetoric of charges leveled at white society during the rally."},
+  {term:"Mass Mobilization", definition:"The process of organizing large numbers of people around a political cause, evidenced by the overflowing auditorium at the rally."}
+];
+
+var DEMO_QUESTIONS = [
+  {level:"recall", question:"Who was assigned to film the Nation of Islam rally in Washington D.C.?"},
+  {level:"recall", question:"What was the name of the play performed at the rally, and who wrote it?"},
+  {level:"application", question:"How did the rhetoric used at the rally reflect the broader goals of the Black nationalist movement in the late 1950s?"},
+  {level:"analysis", question:"What does the narrator's reaction — described as being 'simply stunned' — reveal about mainstream American awareness of the Nation of Islam?"},
+  {level:"analysis", question:"How does using a legal trial format serve as a rhetorical strategy for addressing racial injustice?"}
+];
+
+var currentMode = "demo";
+
+function setMode(m) {
+  currentMode = m;
+  document.getElementById("bdemo").className = "tbtn" + (m === "demo" ? " on" : "");
+  document.getElementById("blive").className = "tbtn" + (m === "live" ? " on" : "");
+  document.getElementById("setupcard").style.display = m === "live" ? "block" : "none";
+  document.getElementById("demonote").style.display = m === "demo" ? "block" : "none";
+  document.getElementById("pipeline").style.display = "none";
+  document.getElementById("output").style.display = "none";
   showErr("");
 }
-function getKey(){return localStorage.getItem("sskey")||"";}
-function saveKey(){
-  const v=document.getElementById("kinput").value.trim();
-  if(!v.startsWith("AIza"))return showErr("Key should start with AIza — check aistudio.google.com");
-  localStorage.setItem("sskey",v);
-  document.getElementById("ksaved").style.display="block";
-  document.getElementById("kinput").value="";
+
+function getKey() { return localStorage.getItem("sskey") || ""; }
+
+function saveKey() {
+  var v = document.getElementById("kinput").value.trim();
+  if (!v.startsWith("AIza")) { showErr("Key should start with AIza — check aistudio.google.com"); return; }
+  localStorage.setItem("sskey", v);
+  document.getElementById("ksaved").style.display = "block";
+  document.getElementById("kinput").value = "";
   showErr("");
 }
-window.addEventListener("DOMContentLoaded",()=>{if(getKey())document.getElementById("ksaved").style.display="block";});
-const txtEl=document.getElementById("txt");
-txtEl.addEventListener("input",()=>{
-  const w=txtEl.value.trim()===""?0:txtEl.value.trim().split(/\s+/).length;
-  const el=document.getElementById("wc");
-  el.textContent=w.toLocaleString()+" / 2,500 words";
-  el.className="wc"+(w>2500?" over":w>2000?" warn":"");
+
+window.addEventListener("DOMContentLoaded", function() {
+  if (getKey()) document.getElementById("ksaved").style.display = "block";
 });
-function showErr(msg){const e=document.getElementById("err");e.textContent=msg;e.style.display=msg?"block":"none";}
-function setAgent(n,state,status){document.getElementById("a"+n).className="agent"+(state?" "+state:"");document.getElementById("s"+n).textContent=status;}
-function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
-function skels(){
-  document.getElementById("pbs").innerHTML="<div class=skel style=width:95%></div><div class=skel style=width:82%></div><div class=skel style=width:68%></div>";
-  document.getElementById("pbc").innerHTML="<div class=skel style=width:55%></div><div class=skel style=width:78%></div><div class=skel style=width:50%></div><div class=skel style=width:72%></div><div class=skel style=width:62%></div>";
-  document.getElementById("pbq").innerHTML="<div class=skel style=width:88%></div><div class=skel style=width:72%></div><div class=skel style=width:80%></div>";
+
+var txtEl = document.getElementById("txt");
+txtEl.addEventListener("input", function() {
+  var words = txtEl.value.trim() === "" ? 0 : txtEl.value.trim().split(/\s+/).length;
+  var el = document.getElementById("wc");
+  el.textContent = words.toLocaleString() + " / 2,500 words";
+  el.className = "wc" + (words > 2500 ? " over" : words > 2000 ? " warn" : "");
+});
+
+function showErr(msg) {
+  var e = document.getElementById("err");
+  e.textContent = msg;
+  e.style.display = msg ? "block" : "none";
 }
-function renderOutput(summary,concepts,questions){
-  document.getElementById("pbs").innerHTML="<p>"+summary+"</p>";
-  document.getElementById("pbc").innerHTML=concepts.map((c,i)=>"<div class=concept><div class=cn>"+(i+1)+"</div><div class=ct><strong>"+c.term+"</strong><span>"+c.definition+"</span></div></div>").join("");
-  document.getElementById("pbq").innerHTML=questions.map((q,i)=>"<div class=question><div class=qn>Q"+(i+1)+"</div><div class=qt>"+q.question+"<span class=qlvl>["+q.level+"]</span></div></div>").join("");
+
+function setAgent(n, state, status) {
+  document.getElementById("a" + n).className = "agent" + (state ? " " + state : "");
+  document.getElementById("s" + n).textContent = status;
 }
-async function runDemo(input){
-  const hf=document.getElementById("handoff");
-  const w=input.split(/\s+/).length;
-  setAgent(1,"active","Running…");await sleep(1200);
-  setAgent(1,"done","Complete ✓");
-  hf.style.display="block";
-  hf.textContent="Intake → Agent 2 handoff: subject=""+DEMO.intake.subject_area+"" · topic=""+DEMO.intake.topic+"" · complexity=""+DEMO.intake.complexity+"" · words="+w;
-  await sleep(800);setAgent(2,"active","Running…");await sleep(1400);
-  setAgent(2,"done","Complete ✓");
-  hf.textContent="Analysis → Agent 3 handoff: 5 concepts extracted · core argument identified · passing structured data to Study Guide Agent";
-  await sleep(800);setAgent(3,"active","Running…");await sleep(1200);
-  setAgent(3,"done","Complete ✓");
-  hf.textContent="Pipeline complete — Intake → Analysis → Study Guide · All 3 agents finished successfully ✓";
-  renderOutput(DEMO.summary,DEMO.concepts,DEMO.questions);
+
+function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+function skels() {
+  document.getElementById("pbs").innerHTML = '<div class="skel" style="width:95%"></div><div class="skel" style="width:82%"></div><div class="skel" style="width:68%"></div>';
+  document.getElementById("pbc").innerHTML = '<div class="skel" style="width:55%"></div><div class="skel" style="width:78%"></div><div class="skel" style="width:50%"></div><div class="skel" style="width:72%"></div><div class="skel" style="width:62%"></div>';
+  document.getElementById("pbq").innerHTML = '<div class="skel" style="width:88%"></div><div class="skel" style="width:72%"></div><div class="skel" style="width:80%"></div>';
 }
-function parseJ(raw){
-  let c=raw.replace(/```json|```/g,"").trim();
-  try{return JSON.parse(c);}catch(e){}
-  const m=c.match(/\{[\s\S]*\}/);
-  if(m){try{return JSON.parse(m[0]);}catch(e){}}
-  throw new Error("Could not parse agent response.");
+
+function renderOutput(summary, concepts, questions) {
+  document.getElementById("pbs").innerHTML = "<p>" + summary + "</p>";
+  var cHtml = "";
+  for (var i = 0; i < concepts.length; i++) {
+    cHtml += '<div class="concept"><div class="cn">' + (i+1) + '</div><div class="ct"><strong>' + concepts[i].term + '</strong><span>' + concepts[i].definition + '</span></div></div>';
+  }
+  document.getElementById("pbc").innerHTML = cHtml;
+  var qHtml = "";
+  for (var j = 0; j < questions.length; j++) {
+    qHtml += '<div class="question"><div class="qn">Q' + (j+1) + '</div><div class="qt">' + questions[j].question + '<span class="qlvl">[' + questions[j].level + ']</span></div></div>';
+  }
+  document.getElementById("pbq").innerHTML = qHtml;
 }
-async function callGemini(sys,msg){
-  const key=getKey();
-  if(!key)throw new Error("No API key. Please enter your Gemini key above.");
-  const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key="+key,{
-    method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:[{role:"user",parts:[{text:msg}]}],generationConfig:{temperature:0.3,maxOutputTokens:1200}})
+
+async function runDemo(input) {
+  var hf = document.getElementById("handoff");
+  var words = input.split(/\s+/).length;
+  setAgent(1, "active", "Running...");
+  await sleep(1200);
+  setAgent(1, "done", "Complete ✓");
+  hf.style.display = "block";
+  hf.textContent = 'Intake → Agent 2 handoff: subject="History / Civil Rights" · complexity="intermediate" · words=' + words;
+  await sleep(800);
+  setAgent(2, "active", "Running...");
+  await sleep(1400);
+  setAgent(2, "done", "Complete ✓");
+  hf.textContent = "Analysis → Agent 3 handoff: 5 concepts extracted · core argument identified · passing to Study Guide Agent";
+  await sleep(800);
+  setAgent(3, "active", "Running...");
+  await sleep(1200);
+  setAgent(3, "done", "Complete ✓");
+  hf.textContent = "Pipeline complete — Intake → Analysis → Study Guide · All 3 agents finished successfully ✓";
+  renderOutput(DEMO_SUMMARY, DEMO_CONCEPTS, DEMO_QUESTIONS);
+}
+
+function parseJSON(raw) {
+  var cleaned = raw.replace(/```json|```/g, "").trim();
+  try { return JSON.parse(cleaned); } catch(e) {}
+  var match = cleaned.match(/\{[\s\S]*\}/);
+  if (match) { try { return JSON.parse(match[0]); } catch(e) {} }
+  throw new Error("Could not parse agent response. Please try again.");
+}
+
+async function callGemini(systemText, userText) {
+  var key = getKey();
+  if (!key) throw new Error("No API key found. Please enter your Gemini key above.");
+  var response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + key, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      system_instruction: {parts: [{text: systemText}]},
+      contents: [{role: "user", parts: [{text: userText}]}],
+      generationConfig: {temperature: 0.3, maxOutputTokens: 1200}
+    })
   });
-  const d=await r.json();
-  if(!r.ok){
-    const m=d.error?.message||"API error";
-    if(r.status===429||m.includes("quota")||m.includes("RESOURCE_EXHAUSTED"))throw new Error("Rate limit reached — switch to Demo Mode or wait 60 seconds.");
-    if(r.status===400||m.includes("API_KEY"))throw new Error("Invalid API key. Check aistudio.google.com.");
-    throw new Error(m);
+  var data = await response.json();
+  if (!response.ok) {
+    var msg = (data.error && data.error.message) || "API error";
+    if (response.status === 429 || msg.indexOf("quota") > -1 || msg.indexOf("RESOURCE_EXHAUSTED") > -1) {
+      throw new Error("Rate limit reached — switch to Demo Mode or wait 60 seconds and try again.");
+    }
+    if (response.status === 400 || msg.indexOf("API_KEY") > -1) {
+      throw new Error("Invalid API key. Check aistudio.google.com.");
+    }
+    throw new Error(msg);
   }
-  return d.candidates?.[0]?.content?.parts?.[0]?.text||"";
+  return data.candidates[0].content.parts[0].text || "";
 }
-async function runLive(input){
-  const hf=document.getElementById("handoff");
-  const wc=input.split(/\s+/).length;
-  setAgent(1,"active","Running…");
-  const r1=await callGemini("You are the Intake Agent. Categorize this academic text. Respond ONLY with JSON, no markdown: {"valid":true,"subject_area":"[subject]","topic":"[topic max 5 words]","word_count":"+wc+","complexity":"[basic|intermediate|advanced]","structured_input":"[repeat input text]"}","Structure:
 
-"+input);
-  const intake=parseJ(r1);
-  setAgent(1,"done","Complete ✓");
-  hf.style.display="block";
-  hf.textContent="Intake → Agent 2 handoff: subject=""+(intake.subject_area||"Academic")+"" · complexity=""+(intake.complexity||"intermediate")+"" · words="+wc;
+async function runLive(input) {
+  var hf = document.getElementById("handoff");
+  var wordCount = input.split(/\s+/).length;
+
+  setAgent(1, "active", "Running...");
+  var sys1 = "You are the Intake Agent. Categorize this academic text. Always set valid to true. Respond with ONLY raw JSON, no markdown, no explanation: {\"valid\":true,\"subject_area\":\"[subject]\",\"topic\":\"[topic max 5 words]\",\"word_count\":" + wordCount + ",\"complexity\":\"[basic or intermediate or advanced]\",\"structured_input\":\"[copy the input text here]\"}";
+  var r1 = await callGemini(sys1, "Structure this text:\n\n" + input);
+  var intake = parseJSON(r1);
+  setAgent(1, "done", "Complete ✓");
+  hf.style.display = "block";
+  hf.textContent = 'Intake → Agent 2 handoff: subject="' + (intake.subject_area || "Academic") + '" · complexity="' + (intake.complexity || "intermediate") + '" · words=' + wordCount;
+
   await sleep(3000);
-  setAgent(2,"active","Running…");
-  const r2=await callGemini("You are the Analysis Agent. Extract exactly 5 key concepts. Respond ONLY with JSON: {"core_argument":"one sentence","concepts":[{"term":"","definition":"","importance":""},...repeat 5 times]}","Extract from:
+  setAgent(2, "active", "Running...");
+  var sys2 = "You are the Analysis Agent. Extract exactly 5 key concepts from this text. Respond with ONLY raw JSON, no markdown: {\"core_argument\":\"one sentence\",\"concepts\":[{\"term\":\"Term1\",\"definition\":\"definition1\",\"importance\":\"why it matters\"},{\"term\":\"Term2\",\"definition\":\"definition2\",\"importance\":\"why it matters\"},{\"term\":\"Term3\",\"definition\":\"definition3\",\"importance\":\"why it matters\"},{\"term\":\"Term4\",\"definition\":\"definition4\",\"importance\":\"why it matters\"},{\"term\":\"Term5\",\"definition\":\"definition5\",\"importance\":\"why it matters\"}]}";
+  var r2 = await callGemini(sys2, "Extract key concepts from:\n\n" + input);
+  var analysis = parseJSON(r2);
+  setAgent(2, "done", "Complete ✓");
+  hf.textContent = "Analysis → Agent 3 handoff: 5 concepts extracted · passing structured data to Study Guide Agent";
 
-"+input);
-  const analysis=parseJ(r2);
-  setAgent(2,"done","Complete ✓");
-  hf.textContent="Analysis → Agent 3 handoff: 5 concepts extracted · passing to Study Guide Agent";
   await sleep(3000);
-  setAgent(3,"active","Running…");
-  const r3=await callGemini("You are the Study Guide Agent. Generate a study guide. Respond ONLY with JSON: {"summary":"3-5 sentences","questions":[{"level":"recall|application|analysis","question":""},...5 questions]}","Create guide from analysis:
-
-"+JSON.stringify(analysis)+"
-
-Original text:
-
-"+input.slice(0,800));
-  const guide=parseJ(r3);
-  setAgent(3,"done","Complete ✓");
-  hf.textContent="Pipeline complete — Intake → Analysis → Study Guide · All 3 agents finished ✓";
-  renderOutput(guide.summary,analysis.concepts||[],guide.questions||[]);
+  setAgent(3, "active", "Running...");
+  var sys3 = "You are the Study Guide Agent. Generate a study guide based on this analysis. Respond with ONLY raw JSON, no markdown: {\"summary\":\"3-5 sentence summary of the content\",\"questions\":[{\"level\":\"recall\",\"question\":\"question text\"},{\"level\":\"application\",\"question\":\"question text\"},{\"level\":\"analysis\",\"question\":\"question text\"},{\"level\":\"recall\",\"question\":\"question text\"},{\"level\":\"analysis\",\"question\":\"question text\"}]}";
+  var r3 = await callGemini(sys3, "Create a study guide from this analysis:\n\n" + JSON.stringify(analysis) + "\n\nOriginal text (first 600 words):\n\n" + input.split(" ").slice(0, 600).join(" "));
+  var guide = parseJSON(r3);
+  setAgent(3, "done", "Complete ✓");
+  hf.textContent = "Pipeline complete — Intake → Analysis → Study Guide · All 3 agents finished successfully ✓";
+  renderOutput(guide.summary, analysis.concepts || [], guide.questions || []);
 }
-async function run(){
-  const input=txtEl.value.trim();
-  if(!input)return showErr("Please paste some text first.");
-  if(mode==="live"){
-    const w=input.split(/\s+/).length;
-    if(w>2500)return showErr("Input exceeds 2,500 words.");
-    if(w<20)return showErr("Please paste at least 20 words.");
-    if(!getKey()){document.getElementById("setupcard").scrollIntoView({behavior:"smooth"});return showErr("Please enter your Gemini API key.");}
+
+async function run() {
+  var input = txtEl.value.trim();
+  if (!input) { showErr("Please paste some text first."); return; }
+  if (currentMode === "live") {
+    var words = input.split(/\s+/).length;
+    if (words > 2500) { showErr("Input exceeds 2,500 words. Please shorten your text."); return; }
+    if (words < 20) { showErr("Please paste at least 20 words."); return; }
+    if (!getKey()) {
+      document.getElementById("setupcard").scrollIntoView({behavior: "smooth"});
+      showErr("Please enter your Gemini API key first.");
+      return;
+    }
   }
-  const btn=document.getElementById("btn");
-  btn.disabled=true;btn.classList.add("loading");
+
+  var btn = document.getElementById("btn");
+  btn.disabled = true;
+  btn.classList.add("loading");
   showErr("");
-  document.getElementById("pipeline").style.display="block";
-  document.getElementById("output").style.display="block";
-  document.getElementById("handoff").style.display="none";
+  document.getElementById("pipeline").style.display = "block";
+  document.getElementById("output").style.display = "block";
+  document.getElementById("handoff").style.display = "none";
   skels();
-  setAgent(1,"","Waiting");setAgent(2,"","Waiting");setAgent(3,"","Waiting");
-  document.getElementById("pipeline").scrollIntoView({behavior:"smooth",block:"start"});
-  try{
-    if(mode==="demo")await runDemo(input);
-    else await runLive(input);
-  }catch(e){
+  setAgent(1, "", "Waiting");
+  setAgent(2, "", "Waiting");
+  setAgent(3, "", "Waiting");
+  document.getElementById("pipeline").scrollIntoView({behavior: "smooth", block: "start"});
+
+  try {
+    if (currentMode === "demo") {
+      await runDemo(input);
+    } else {
+      await runLive(input);
+    }
+  } catch(e) {
     showErr(e.message);
-    document.getElementById("output").style.display="none";
-    ["1","2","3"].forEach(n=>{if(document.getElementById("a"+n).classList.contains("active"))setAgent(n,"fail","Failed");});
-  }finally{btn.disabled=false;btn.classList.remove("loading");}
+    document.getElementById("output").style.display = "none";
+    var ids = ["1","2","3"];
+    for (var k = 0; k < ids.length; k++) {
+      if (document.getElementById("a" + ids[k]).classList.contains("active")) {
+        setAgent(ids[k], "fail", "Failed");
+      }
+    }
+  } finally {
+    btn.disabled = false;
+    btn.classList.remove("loading");
+  }
 }
-async function copyAll(){
-  const s=document.getElementById("pbs").innerText;
-  const c=document.getElementById("pbc").innerText;
-  const q=document.getElementById("pbq").innerText;
-  try{
-    await navigator.clipboard.writeText("STUDYSNAP AI\n\nSUMMARY\n"+s+"\n\nKEY CONCEPTS\n"+c+"\n\nPRACTICE QUESTIONS\n"+q+"\n\nAI-generated — review before use.");
-    const b=document.querySelector(".bcopy");b.textContent="Copied!";setTimeout(()=>b.textContent="Copy all",2000);
-  }catch{showErr("Could not copy.");}
+
+function copyAll() {
+  var s = document.getElementById("pbs").innerText;
+  var c = document.getElementById("pbc").innerText;
+  var q = document.getElementById("pbq").innerText;
+  var full = "STUDYSNAP AI - STUDY GUIDE\n\nSUMMARY\n" + s + "\n\nKEY CONCEPTS\n" + c + "\n\nPRACTICE QUESTIONS\n" + q + "\n\nAI-generated: review critically before use.";
+  navigator.clipboard.writeText(full).then(function() {
+    var b = document.querySelector(".bcopy");
+    b.textContent = "Copied!";
+    setTimeout(function() { b.textContent = "Copy all"; }, 2000);
+  }).catch(function() { showErr("Could not copy."); });
 }
-txtEl.addEventListener("keydown",e=>{if(e.ctrlKey&&e.key==="Enter")run();});
+
+txtEl.addEventListener("keydown", function(e) {
+  if (e.ctrlKey && e.key === "Enter") run();
+});
+
 </script>
 </body>
 </html>
